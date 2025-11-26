@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createBrowserRouter, useNavigate } from "react-router-dom";
+import { createHashRouter, useNavigate } from "react-router-dom";
 
 import api from "./lib/api";
 
@@ -34,53 +34,12 @@ const Auth = ({ children }) => {
   return <main>{isLoggedIn ? children : null}</main>;
 };
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <Auth>
-        <Dashboard />
-      </Auth>
-    ),
-  },
-  {
-    path: "/guru",
-    element: (
-      <Auth>
-        <Guru />
-      </Auth>
-    ),
-  },
-  {
-    path: "/guru/detail/:id",
-    element: (
-      <Auth>
-        <Guru />
-      </Auth>
-    ),
-  },
-  {
-    path: "/jabatan",
-    element: (
-      <Auth>
-        <Jabatan />
-      </Auth>
-    ),
-  },
-  {
-    path: "/jabatan/detail/:id",
-    element: (
-      <Auth>
-        <Jabatan />
-      </Auth>
-    ),
-  },
+export const router = createHashRouter([
+  { path: "/", element: <App /> },
+  { path: "/login", element: <Login /> },
+  { path: "/dashboard", element: <Auth><Dashboard /></Auth> },
+  { path: "/guru", element: <Auth><Guru /></Auth> },
+  { path: "/guru/detail/:id", element: <Auth><Guru /></Auth> },
+  { path: "/jabatan", element: <Auth><Jabatan /></Auth> },
+  { path: "/jabatan/detail/:id", element: <Auth><Jabatan /></Auth> },
 ]);
