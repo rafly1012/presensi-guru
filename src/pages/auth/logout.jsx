@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "lucide-react";
 
-import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,31 +12,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Logout() {
-  const [nama, setNama] = useState(null);
+  const [nama, setNama] = useState("");
 
   useEffect(() => {
-    const fetchAdminProfile = async () => {
-      try {
-        const adminData = JSON.parse(localStorage.getItem("adminData"));
-        setNama(adminData.nama);
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-    fetchAdminProfile();
-  }, []);
-
-  const handleLogout = async () => {
     try {
-      const response = await api.post("/auth/admin/logout");
-      if (response.status === 200) {
-        localStorage.removeItem("adminData");
-        window.location.href = "/login";
+      const adminData = JSON.parse(localStorage.getItem("adminData"));
+      if (adminData) {
+        // sesuaikan properti nama
+        setNama(adminData.nama || adminData.username || "Admin");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to parse adminData:", error);
     }
+  }, []);
+
+  const handleLogout = () => {
+    // hapus token & data lokal
+    localStorage.removeItem("adminData");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
   };
 
   return (
