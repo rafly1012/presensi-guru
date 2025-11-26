@@ -14,24 +14,16 @@ const Auth = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await api.get("/auth/admin/session");
-        if (response.data.success) {
-          setIsLoggedIn(true);
-        } else {
-          navigate("/login");
-        }
-      } catch (error) {
-        console.log("Tidak ada sesi aktif", error.response?.data?.message);
-        navigate("/login");
-      }
-    };
+    const token = localStorage.getItem("token");
 
-    checkSession();
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      navigate("/login");
+    }
   }, [navigate]);
 
-  return <main>{isLoggedIn ? children : null}</main>;
+  return <>{isLoggedIn ? children : null}</>;
 };
 
 export const router = createBrowserRouter([
