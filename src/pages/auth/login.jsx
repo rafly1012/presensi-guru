@@ -37,9 +37,15 @@ export default function Login() {
     try {
       const response = await api.post("auth/admin/login", data);
       if (response.data.success) {
-        const adminData = response.data.data.admin;
-        localStorage.setItem("adminData", JSON.stringify(adminData));
-        navigate("/dashboard", { state: { adminData } });
+        const { admin, token } = response.data.data;
+  
+        // SIMPAN TOKEN JWT
+        localStorage.setItem("token", token);
+  
+        // opsional: simpan admin info juga
+        localStorage.setItem("adminData", JSON.stringify(admin));
+  
+        navigate("/dashboard");
       } else {
         console.error("Login gagal:", response.data.message);
       }
