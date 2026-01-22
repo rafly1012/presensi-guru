@@ -203,7 +203,7 @@ export function SearchNIP() {
       if (selectedValue === 'h') {
         const phone = `whatsapp:+${guruData.nohportu}`;
         const messages = `Dear Orang tua\nAnak Anda ${guruData.nama} hadir di Sekolah, pada Jam ${currentTime}, ${currentMessage} di ${currentDay}\nFrom SMK Negeri 7 Kota Kupang`
-        const response = await fetch("http://localhost:3000/api/send-sms", {
+        const response = await fetch("https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/api/send-sms", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -236,7 +236,7 @@ export function SearchNIP() {
                 <CardContent>
                   <img
                     className="aspect-square w-full rounded-md object-cover border border-dashed"
-                    src={`http://localhost:3000/uploads/${guruData.foto}`}
+                    src={`https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/uploads/${guruData.foto}`}
                     alt={`Foto Guru ${guruData.nama}`}
                   />
                   <p className="text-lg text-primary font-semibold">
