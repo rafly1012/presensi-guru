@@ -238,8 +238,10 @@ export function SearchNIP() {
                     className="aspect-square w-full rounded-md object-cover border border-dashed"
                     src={`https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/uploads/${guruData.foto}`}
                     alt={`Foto Guru ${guruData.nama}`}
+                    onError={(e) => {
+                      e.currentTarget.src = '/placeholder-avatar.png'; // fallback image
+                    }}
                   />
-                  <a href={`https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/uploads/${guruData.foto}`}>Foto</a>
                   <p className="text-lg text-primary font-semibold">
                     {guruData.nama}
                   </p>
