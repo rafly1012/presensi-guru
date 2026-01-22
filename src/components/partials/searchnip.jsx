@@ -242,6 +242,7 @@ export function SearchNIP() {
                       e.currentTarget.src = '/placeholder-avatar.png'; // fallback image
                     }}
                   />
+                  <a href={`https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/uploads/${guruData.foto}`} target="_blank" className="text-xs font-medium">Klik untuk melihat foto</a>
                   <p className="text-lg text-primary font-semibold">
                     {guruData.nama}
                   </p>
