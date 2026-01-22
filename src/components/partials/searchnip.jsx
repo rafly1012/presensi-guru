@@ -239,7 +239,6 @@ export function SearchNIP() {
                     src={`https://server-presensi-m6ehtlhoy-rafly-yusufs-projects.vercel.app/uploads/${guruData.foto}`}
                     alt={`Foto Guru ${guruData.nama}`}
                   />
-                  {guruData.foto}
                   <p className="text-lg text-primary font-semibold">
                     {guruData.nama}
                   </p>
