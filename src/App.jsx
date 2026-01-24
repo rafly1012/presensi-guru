@@ -31,13 +31,15 @@ const ALLOWED_LOCATION = {
   latitude: -10.1766587,   // Ganti dengan latitude sebenarnya
   longitude: 123.6342151,  // Ganti dengan longitude sebenarnya
 };
-const MAX_RADIUS_METERS = 100; // 100 meter
+const MAX_RADIUS_METERS = 200; // Dinaikkan ke 200 meter untuk toleransi GPS
 
 function App() {
   const [time, setTime] = useState(new Date());
   const [message, setMessage] = useState("");
   const [locationStatus, setLocationStatus] = useState("checking"); // 'checking' | 'allowed' | 'denied'
   const [userLocation, setUserLocation] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [accuracy, setAccuracy] = useState(null);
 
   // Cek waktu presensi
   useEffect(() => {
@@ -51,7 +53,7 @@ function App() {
     const now = new Date();
     const currentTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
     const currentDayIndex = now.getDay();
-    const currentDay = currentDayIndex === 0 ? "Minggu" : DAYS_OF_WEEK[currentDayIndex - 1]; // Sesuaikan jika DAYS_OF_WEEK mulai dari Senin
+    const currentDay = currentDayIndex === 0 ? "Minggu" : DAYS_OF_WEEK[currentDayIndex - 1];
 
     let currentMessage = "Presensi Belum Dibuka.";
 
@@ -77,19 +79,27 @@ function App() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    // Gunakan watchPosition untuk update real-time yang lebih akurat
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const { latitude, longitude } = position.coords;
+        const { latitude, longitude, accuracy: posAccuracy } = position.coords;
         setUserLocation({ latitude, longitude });
+        setAccuracy(posAccuracy);
 
-        const distance = getDistance(
+        const calculatedDistance = getDistance(
           latitude,
           longitude,
           ALLOWED_LOCATION.latitude,
           ALLOWED_LOCATION.longitude
         );
 
-        if (distance <= MAX_RADIUS_METERS) {
+        setDistance(calculatedDistance);
+
+        // Pertimbangkan akurasi GPS dalam perhitungan
+        // Jika akurasi GPS rendah (nilai besar), berikan toleransi lebih
+        const effectiveRadius = MAX_RADIUS_METERS + (posAccuracy > 50 ? posAccuracy : 0);
+
+        if (calculatedDistance <= effectiveRadius) {
           setLocationStatus("allowed");
         } else {
           setLocationStatus("denied");
@@ -100,11 +110,16 @@ function App() {
         setLocationStatus("denied");
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: true, // Gunakan GPS, bukan WiFi/Cell tower
         timeout: 10000,
-        maximumAge: 60000,
+        maximumAge: 0, // Jangan gunakan cache, selalu ambil posisi baru
       }
     );
+
+    // Cleanup: hentikan watch saat component unmount
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   return (
@@ -177,17 +192,44 @@ function App() {
 
       <main className="flex-1">
         <div className="container relative">
-          {/* Opsional: tampilkan info lokasi */}
+          {/* Info lokasi dengan detail untuk debugging */}
           {locationStatus === "checking" && (
-            <p className="text-center text-muted-foreground py-4">Memeriksa lokasi Anda...</p>
+            <div className="text-center text-muted-foreground py-4">
+              <p>🔍 Memeriksa lokasi Anda...</p>
+              <p className="text-xs mt-2">Pastikan GPS aktif dan izin lokasi diberikan</p>
+            </div>
           )}
+          
+          {locationStatus === "allowed" && userLocation && (
+            <div className="text-center py-4 text-green-600 dark:text-green-400">
+              <p>✅ Lokasi Anda sesuai untuk presensi</p>
+              <details className="text-xs mt-2 text-muted-foreground">
+                <summary className="cursor-pointer">Detail Lokasi</summary>
+                <div className="mt-2 space-y-1">
+                  <p>Lokasi Anda: {userLocation.latitude.toFixed(6)}, {userLocation.longitude.toFixed(6)}</p>
+                  <p>Jarak dari sekolah: {distance?.toFixed(1)} meter</p>
+                  <p>Akurasi GPS: ±{accuracy?.toFixed(1)} meter</p>
+                  <p>Radius maksimal: {MAX_RADIUS_METERS} meter</p>
+                </div>
+              </details>
+            </div>
+          )}
+          
           {locationStatus === "denied" && (
             <div className="text-center py-6 text-destructive">
-              <p>❌ Anda harus berada di area sekolah untuk melakukan presensi.</p>
-              {userLocation && (
-                <p className="text-sm mt-1">
-                  Lokasi Anda: {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
-                </p>
+              <p className="font-semibold">❌ Anda harus berada di area sekolah untuk melakukan presensi</p>
+              {userLocation && distance !== null && (
+                <div className="mt-4 text-sm space-y-1">
+                  <p>Lokasi Anda: {userLocation.latitude.toFixed(6)}, {userLocation.longitude.toFixed(6)}</p>
+                  <p>Lokasi Sekolah: {ALLOWED_LOCATION.latitude}, {ALLOWED_LOCATION.longitude}</p>
+                  <p className="font-semibold text-base mt-2">
+                    Jarak: {distance.toFixed(1)} meter (Maksimal: {MAX_RADIUS_METERS} meter)
+                  </p>
+                  <p>Akurasi GPS: ±{accuracy?.toFixed(1)} meter</p>
+                  <p className="text-xs mt-3 text-muted-foreground">
+                    Tip: Pastikan GPS aktif dan Anda berada di luar ruangan untuk akurasi lebih baik
+                  </p>
+                </div>
               )}
             </div>
           )}
