@@ -203,34 +203,12 @@ function App() {
           {locationStatus === "allowed" && userLocation && (
             <div className="text-center py-4 text-green-600 dark:text-green-400">
               <p>✅ Lokasi Anda sesuai untuk presensi</p>
-              <details className="text-xs mt-2 text-muted-foreground">
-                <summary className="cursor-pointer">Detail Lokasi</summary>
-                <div className="mt-2 space-y-1">
-                  <p>Lokasi Anda: {userLocation.latitude.toFixed(6)}, {userLocation.longitude.toFixed(6)}</p>
-                  <p>Jarak dari sekolah: {distance?.toFixed(1)} meter</p>
-                  <p>Akurasi GPS: ±{accuracy?.toFixed(1)} meter</p>
-                  <p>Radius maksimal: {MAX_RADIUS_METERS} meter</p>
-                </div>
-              </details>
             </div>
           )}
           
           {locationStatus === "denied" && (
             <div className="text-center py-6 text-destructive">
               <p className="font-semibold">❌ Anda harus berada di area sekolah untuk melakukan presensi</p>
-              {userLocation && distance !== null && (
-                <div className="mt-4 text-sm space-y-1">
-                  <p>Lokasi Anda: {userLocation.latitude.toFixed(6)}, {userLocation.longitude.toFixed(6)}</p>
-                  <p>Lokasi Sekolah: {ALLOWED_LOCATION.latitude}, {ALLOWED_LOCATION.longitude}</p>
-                  <p className="font-semibold text-base mt-2">
-                    Jarak: {distance.toFixed(1)} meter (Maksimal: {MAX_RADIUS_METERS} meter)
-                  </p>
-                  <p>Akurasi GPS: ±{accuracy?.toFixed(1)} meter</p>
-                  <p className="text-xs mt-3 text-muted-foreground">
-                    Tip: Pastikan GPS aktif dan Anda berada di luar ruangan untuk akurasi lebih baik
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </div>
