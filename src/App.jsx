@@ -31,7 +31,7 @@ const ALLOWED_LOCATION = {
   latitude: -10.1766588,   // Ganti dengan latitude sebenarnya
   longitude: 123.6364907,  // Ganti dengan longitude sebenarnya
 };
-const MAX_RADIUS_METERS = 200; // Dinaikkan ke 200 meter untuk toleransi GPS
+const MAX_RADIUS_METERS = 20; // Dinaikkan ke 200 meter untuk toleransi GPS
 
 function App() {
   const [time, setTime] = useState(new Date());
