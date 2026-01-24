@@ -10,22 +10,48 @@ import { SearchNIP } from "./components/partials/searchnip";
 import QrReader from "./components/partials/cam";
 import { TIME_RANGES, DAYS_OF_WEEK } from "@/lib/check";
 
+// Fungsi untuk menghitung jarak (dalam meter) antara dua koordinat (Haversine)
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Radius bumi dalam meter
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // dalam meter
+}
+
+// Lokasi yang diizinkan (ganti dengan koordinat sebenarnya)
+const ALLOWED_LOCATION = {
+  latitude: -10.1685,   // Ganti dengan latitude sebenarnya
+  longitude: 123.6000,  // Ganti dengan longitude sebenarnya
+};
+const MAX_RADIUS_METERS = 100; // 100 meter
+
 function App() {
   const [time, setTime] = useState(new Date());
   const [message, setMessage] = useState("");
+  const [locationStatus, setLocationStatus] = useState("checking"); // 'checking' | 'allowed' | 'denied'
+  const [userLocation, setUserLocation] = useState(null);
 
+  // Cek waktu presensi
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     const now = new Date();
-    const currentTime = `${now.getHours()}:${now.getMinutes()}`;
-    const currentDay = DAYS_OF_WEEK[now.getDay() - 1];
+    const currentTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const currentDayIndex = now.getDay();
+    const currentDay = currentDayIndex === 0 ? "Minggu" : DAYS_OF_WEEK[currentDayIndex - 1]; // Sesuaikan jika DAYS_OF_WEEK mulai dari Senin
 
     let currentMessage = "Presensi Belum Dibuka.";
 
@@ -33,10 +59,7 @@ function App() {
 
     if (currentTime >= jammasuk.start && currentTime <= jammasuk.end) {
       currentMessage = `Waktu masuk.`;
-    } else if (
-      currentTime >= jamkeluar.start &&
-      currentTime <= jamkeluar.end
-    ) {
+    } else if (currentTime >= jamkeluar.start && currentTime <= jamkeluar.end) {
       currentMessage = `Waktu keluar.`;
     }
 
@@ -47,6 +70,42 @@ function App() {
     setMessage(currentMessage);
   }, [time]);
 
+  // Cek lokasi pengguna saat komponen dimuat
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus("denied");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ latitude, longitude });
+
+        const distance = getDistance(
+          latitude,
+          longitude,
+          ALLOWED_LOCATION.latitude,
+          ALLOWED_LOCATION.longitude
+        );
+
+        if (distance <= MAX_RADIUS_METERS) {
+          setLocationStatus("allowed");
+        } else {
+          setLocationStatus("denied");
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("denied");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  }, []);
 
   return (
     <Root>
@@ -81,6 +140,7 @@ function App() {
           />
         </svg>
       </div>
+
       <header className="sticky top-0 z-50 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-screen-2xl items-center">
           <div className="mr-4 flex">
@@ -114,12 +174,33 @@ function App() {
           </div>
         </div>
       </header>
+
       <main className="flex-1">
-        <div className="container relative"></div>
+        <div className="container relative">
+          {/* Opsional: tampilkan info lokasi */}
+          {locationStatus === "checking" && (
+            <p className="text-center text-muted-foreground py-4">Memeriksa lokasi Anda...</p>
+          )}
+          {locationStatus === "denied" && (
+            <div className="text-center py-6 text-destructive">
+              <p>❌ Anda harus berada di area sekolah untuk melakukan presensi.</p>
+              {userLocation && (
+                <p className="text-sm mt-1">
+                  Lokasi Anda: {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </main>
+
       <footer className="py-6 md:px-8 md:py-0">
-        <QrReader />
-        <SearchNIP />
+        {locationStatus === "allowed" ? (
+          <>
+            <QrReader />
+            <SearchNIP />
+          </>
+        ) : null}
       </footer>
     </Root>
   );
