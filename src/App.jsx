@@ -28,8 +28,8 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 // Lokasi yang diizinkan (ganti dengan koordinat sebenarnya)
 const ALLOWED_LOCATION = {
-  latitude: -10.1685,   // Ganti dengan latitude sebenarnya
-  longitude: 123.6000,  // Ganti dengan longitude sebenarnya
+  latitude: -10.1766587,   // Ganti dengan latitude sebenarnya
+  longitude: 123.6342151,  // Ganti dengan longitude sebenarnya
 };
 const MAX_RADIUS_METERS = 100; // 100 meter
 
